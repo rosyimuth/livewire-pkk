@@ -12,6 +12,10 @@
       <form wire:submit.prevent="store">
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div>
+            <!-- Judul Form Edit -->
+          <div class="text-xl font-semibold text-gray-700 mb-4" id="modal-headline">
+            Edit
+          </div>
             <!-- Input Title -->
             <div class="mb-4">
               <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
@@ -35,14 +39,14 @@
 
             <!-- Display existing image if available -->
             @if($image && $image instanceof \Illuminate\Http\UploadedFile)
-                <div class="mt-2 relative">
+                <div class="flex justify-center mt-2 relative">
                     <!-- Menampilkan gambar yang diupload -->
-                    <img src="{{ $image->temporaryUrl() }}" class="w-32 h-32 object-cover rounded-md" alt="Uploaded Image">
+                    <img src="{{ $image->temporaryUrl() }}" class="max-w-[120px] max-h-[120px] rounded-md object-contain" alt="Uploaded Image">
                 </div>
             @elseif($imagePath) <!-- Cek jika $imagePath ada -->
-                <div class="mt-2 relative">
+                <div class="flex justify-center mt-2 relative">
                     <!-- Menampilkan gambar lama -->
-                    <img src="{{ asset('storage/' . $imagePath) }}" class="w-32 h-32 object-cover rounded-md" alt="Existing Image">
+                    <img src="{{ asset('storage/' . $imagePath) }}" class="max-w-[120px] max-h-[120px] rounded-md object-contain" alt="Existing Image">
                     
                     <!-- Icon tempat sampah untuk menghapus gambar -->
                     <button type="button" wire:click="removeImage" class="absolute top-0 right-0 bg-white rounded-full p-1 text-red-500 hover:bg-gray-200 focus:outline-none">
@@ -59,7 +63,7 @@
 
         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
           <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
-            <button type="submit" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-green-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none focus:border-green-700 focus:shadow-outline-green transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+            <button type="submit" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">
               Save
             </button>
           </span>

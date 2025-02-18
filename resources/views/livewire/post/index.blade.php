@@ -61,9 +61,9 @@
                             <td class="border px-4 py-2">{{ $posts->firstItem() + $loop->index }}</td>
                             <td class="border px-4 py-2">{{ $post->title }}</td>
                             <td class="border px-4 py-2">{{ $post->description }}</td>
-                            <td class="border px-4 py-2">
+                            <td class="border px-4 py-2 flex justify-center items-center">
                                 @if($post->image)
-                                    <img src="{{ asset('storage/' . $post->image) }}" alt="Uploaded Image" class="w-20 h-20 object-cover">
+                                    <img src="{{ asset('storage/' . $post->image) }}" alt="Uploaded Image" class="max-w-[120px] max-h-[120px] rounded-md object-contain">
                                 @else
                                     <span>No image</span>
                                 @endif

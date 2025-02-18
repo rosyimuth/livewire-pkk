@@ -12,6 +12,10 @@
       <form wire:submit.prevent="store">
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div>
+            <!-- Judul Form Edit -->
+          <div class="text-xl font-semibold text-gray-700 mb-4" id="modal-headline">
+            Create
+          </div>
             <!-- Input Title -->
             <div class="mb-4">
               <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
@@ -29,10 +33,31 @@
             </div>
 
             <!-- Input Image -->
+            <!-- Input Image -->
             <div class="mb-4">
-              <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image:</label>
-              <input type="file" wire:model="image" id="image" class="border border-gray-300 rounded-md px-4 py-2 w-full focus:outline-none focus:ring focus:border-blue-300">
-              @error('image') <span class="text-red-500">{{ $message }}</span> @enderror
+                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image:</label>
+                <input type="file" wire:model="image" id="image" class="border border-gray-300 rounded-md px-4 py-2 w-full focus:outline-none focus:ring focus:border-blue-300">
+
+            <!-- Display existing image if available -->
+            @if($image && $image instanceof \Illuminate\Http\UploadedFile)
+                <div class="flex justify-center mt-2 relative">
+                    <!-- Menampilkan gambar yang diupload -->
+                    <img src="{{ $image->temporaryUrl() }}" class="max-w-[120px] max-h-[120px] rounded-md object-contain" alt="Uploaded Image">
+                </div>
+            @elseif($imagePath) <!-- Cek jika $imagePath ada -->
+                <div class="flex justify-center mt-2 relative">
+                    <!-- Menampilkan gambar lama -->
+                    <img src="{{ asset('storage/' . $imagePath) }}" class="max-w-[120px] max-h-[120px] rounded-md object-contain" alt="Existing Image">
+                    
+                    <!-- Icon tempat sampah untuk menghapus gambar -->
+                    <button type="button" wire:click="removeImage" class="absolute top-0 right-0 bg-white rounded-full p-1 text-red-500 hover:bg-gray-200 focus:outline-none">
+                        <!-- Ikon tempat sampah menggunakan Bootstrap Icons -->
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            @endif
+
+                @error('image') <span class="text-red-500">{{ $message }}</span> @enderror
             </div>
           </div>
         </div>
