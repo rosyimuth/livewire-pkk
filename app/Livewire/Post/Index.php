@@ -13,27 +13,52 @@ class Index extends Component
     use WithPagination, WithFileUploads;
 
     public $isOpen = false;
+    public $isShow = false;
     public $image, $title, $description, $post_id;
-    public $imagePath = null;  // Properti untuk menyimpan path gambar lama
+    public $imagePath = null;
     public $search = '';
+    public $perPage = 5;
+
+    protected $queryString = ['search', 'perPage'];
 
     public function render()
     {
         return view('livewire.post.index', [
             'posts' => Post::where('title', 'like', '%' . $this->search . '%')
                 ->latest()
-                ->paginate(5)
+                ->paginate($this->perPage)
         ]);
+    }
+
+    public function updatePerPage()
+    {
+        $this->resetPage();
     }
 
     public function updateSearch()
     {
-        $this->resetPage(); // Reset pagination ke halaman pertama setelah pencarian
+        $this->resetPage();
     }
 
     public function create()
     {
         $this->resetInputFields();
+        $this->openModal();
+    }
+
+    public function show($id)
+    {
+        $post = Post::findOrFail($id);
+        $this->fillPostData($post);
+        $this->isShow = true;
+        $this->isOpen = true;
+    }
+
+    public function edit($id)
+    {
+        $post = Post::findOrFail($id);
+        $this->fillPostData($post);
+        $this->isShow = false;
         $this->openModal();
     }
 
@@ -45,89 +70,88 @@ class Index extends Component
     public function closeModal()
     {
         $this->isOpen = false;
+        $this->isShow = false;
     }
 
     private function resetInputFields()
     {
-        $this->title = '';
-        $this->description = '';
-        $this->post_id = '';
-        $this->image = null;
-        $this->imagePath = null; // Reset path gambar juga
+        $this->reset(['title', 'description', 'post_id', 'image', 'imagePath']);
+    }
+
+    private function fillPostData($post)
+    {
+        $this->post_id = $post->id;
+        $this->title = $post->title;
+        $this->description = $post->description;
+        $this->imagePath = $post->image;
     }
 
     public function store()
-{
-    // Validasi input
-    $this->validate([
-        'title' => 'required',
-        'description' => 'required',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    ]);
-
-    // Menyimpan gambar jika ada
-    $imagePath = null;
-    if ($this->image) {
-        // Jika ada gambar baru, simpan dan ambil path-nya
-        $imagePath = $this->image->store('posts', 'public'); // Menyimpan gambar ke folder 'posts'
-    } elseif ($this->post_id) {
-        // Jika tidak ada gambar baru dan ini adalah edit, gunakan gambar lama
-        $post = Post::find($this->post_id);
-        $imagePath = $post->image; // Menggunakan gambar yang lama
-    }
-
-    // Menyimpan data post ke database
-    Post::updateOrCreate(['id' => $this->post_id], [
-        'title' => $this->title,
-        'description' => $this->description,
-        'image' => $imagePath,
-    ]);
-
-    // Menampilkan pesan sukses
-    session()->flash('message', 
-        $this->post_id ? 'Post Updated Successfully.' : 'Post Created Successfully.');
-
-    $this->closeModal();
-    $this->resetInputFields();
-}
-
-    public function edit($id)
     {
-        $post = Post::findOrFail($id);
-        $this->post_id = $id;
-        $this->title = $post->title;
-        $this->description = $post->description;
+        $this->validate([
+            'title' => 'required',
+            'description' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
 
-        // Set gambar lama jika ada
-        $this->imagePath = $post->image; // Set gambar lama di sini
+        if ($this->image) {
+            $imagePath = $this->image->store('posts', 'public');
+        } elseif ($this->post_id) {
+            $imagePath = Post::find($this->post_id)->image ?? null;
+        } else {
+            $imagePath = null;
+        }
 
-        $this->openModal();
+        Post::updateOrCreate(
+            ['id' => $this->post_id],
+            [
+                'title' => $this->title,
+                'description' => $this->description,
+                'image' => $imagePath,
+            ]
+        );
+
+        session()->flash('message', $this->post_id ? 'Post Updated Successfully.' : 'Post Created Successfully.');
+
+        $this->closeModal();
+        $this->resetInputFields();
+        $this->resetPage();
     }
 
     public function removeImage()
     {
-        // Menghapus gambar yang sedang dipilih
+        if ($this->imagePath) {
+            // Hapus file dari storage
+            if (Storage::exists('public/' . $this->imagePath)) {
+                Storage::delete('public/' . $this->imagePath);
+            }
+
+            // Jika sedang edit post, update database agar gambar dihapus permanen
+            if ($this->post_id) {
+                Post::where('id', $this->post_id)->update(['image' => null]);
+            }
+
+            // Reset variabel
+            $this->imagePath = null;
+        }
+
         $this->image = null;
-        $this->imagePath = null; // Pastikan path juga di-reset jika gambar dihapus
     }
     
     public function delete($id)
     {
         $post = Post::find($id);
 
-        // Menghapus gambar dari storage jika ada
         if ($post && $post->image) {
-            // Pastikan path gambar yang disimpan adalah relatif terhadap folder public
             $imagePath = 'public/' . $post->image;
             if (Storage::exists($imagePath)) {
-                // Menghapus gambar dari storage
                 Storage::delete($imagePath);
             }
         }
 
-        // Menghapus post dari database
         $post->delete();
 
         session()->flash('message', 'Post Deleted Successfully.');
+        $this->resetPage();
     }
 }
