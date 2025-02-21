@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\Counter;
-use App\Livewire\Post\Index;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,5 +20,8 @@ Route::middleware([
     Route::get('/counter', Counter::class)->name('counter');
     
     // Route untuk daftar Post
-    Route::get('/post.index', Index::class)->name('post.index');
+    Route::get('/post.index', App\Livewire\Post\Index::class)->name('post.index');
+
+    // Route untuk daftar Post
+    Route::get('/product.index', App\Livewire\Product\Index::class)->name('product.index');
 });
